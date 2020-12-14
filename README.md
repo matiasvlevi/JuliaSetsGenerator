@@ -4,6 +4,7 @@
 * Launch the `run.bat` file. <br />
 * Specify the name of the video you want to generate with the number of total frames to generate<br />
 ex: `video1 240 `
+* The frames will be stored in a folder with the video name as `frame_x.png `  
 
 # Default formula
 
