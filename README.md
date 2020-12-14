@@ -1,7 +1,7 @@
 # Julia Sets Generator
 
 # Usage
-* Launch the 'run.bat' file. <br />
+* Launch the `run.bat` file. <br />
 * Specify the name of the video you want to generate with the number of total frames to generate<br />
 ex: `video1 240 `
 
