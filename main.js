@@ -35,11 +35,11 @@ class Complex {
 
 
 let zoom = 1;
-let wnx = 1920;
-let wny = 1080;
+let wnx = 1920*12;
+let wny = 1080*12;
 let points = [];
 let pixels = [];
-let nb = 64;
+let nb = 32;
 let sx;
 let sy;
 let lightFactor = 2;
@@ -50,7 +50,7 @@ function customQuadratic(x,h) {
 
 }
 function scaleColor(value) {
-    let n1 = map(value,0,nb,0,255*1.5)
+    let n1 = map(value,0,nb,0,255*0.75)
     let n = constrain(n1,0,255);
     let g = customQuadratic(n,127.5);
     let b = customQuadratic(n,127.5/2);
@@ -61,17 +61,19 @@ let images = [];
 function setup() {
     let img;
     //createCanvas(wnx,wny);
-    for (let a = 0; a < 240; a++) {
+    for (let a = 0; a < 1; a++) {
+        img = createImage(wnx,wny);
+        img.loadPixels();
         for (let r = 0; r < wnx; r++) {
 
             for (let i = 0; i < wny; i++) {
-                let c = new Complex((r-wnx/2)*0.0025,(i-(wny/2))*0.0025);
+                let c = new Complex((r-wnx/2)*(0.0025/12),(i-(wny/2))*(0.0025/12));
                 c.add(new Complex(-0.5,0))
                 let max = 0;
                 for (let j = 0; j < nb; j++) {
 
                     c.add(Complex.square(c));
-                    c.add(new Complex(0.1,(1/240)*a))
+                    c.add(new Complex(0.05,0.5))
 
                     if (c.i == Infinity || c.r == Infinity || isNaN(c.r) || isNaN(c.i)) {
                         //console.log("to infinity");
@@ -83,27 +85,28 @@ function setup() {
 
                 }
 
-                pixels[(wnx*i)+r] = scaleColor(max);
+                //pixels[(wnx*i)+r] = scaleColor(max);
 
-
+                img.set(r,i, scaleColor(max));
             }
 
-        }
-        //pixels.splice(pixels.length-1,1)
-        img = createImage(wnx,wny);
-        img.loadPixels();
-        for (let x = 0; x < wnx; x++) {
-            for (let y = 0; y < wny; y++) {
-                c = pixels[(wnx*y)+x];
-
-                img.set(x,y, c);
-
-
-            }
         }
         img.updatePixels();
         images.push(img);
         console.log(a);
+        //pixels.splice(pixels.length-1,1)
+        //
+        // for (let x = 0; x < wnx; x++) {
+        //     for (let y = 0; y < wny; y++) {
+        //         c = pixels[(wnx*y)+x];
+        //
+        //
+        //
+        //
+        //     }
+        // }
+
+
     }
 
 
