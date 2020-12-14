@@ -5,7 +5,7 @@
 * Specify the name of the folder in which to store the rendered frames <br />
 * Specify the number of frames to render <br />
 * Specify the resolution multiplier <br />
-ex: `0.5 = 960x540`,`1 = 1920x1080 HD`, `2 = 3840x2160 4K`
+ex:<br /> `0.5 = 960x540`<br />`1 = 1920x1080 HD`<br /> `2 = 3840x2160 4K`
 
 # Default formula
 
