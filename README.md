@@ -20,3 +20,5 @@ The default formula is `Zn+1 = Zn^2 + c + e` <br />
    trig functions are in radians. <br />
 
 
+# Video example
+https://youtu.be/gsstxaBSgMY
