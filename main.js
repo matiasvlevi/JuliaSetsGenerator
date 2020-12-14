@@ -3,10 +3,11 @@ require('mathjs');
 const prompt = require('prompt')
 const fs = require('fs');
 let lightFactor = 2;
-let resmult = 2;
+let resmult = 1;
 let wnx = 1920*resmult;
 let wny = 1080*resmult;
-
+let canvas;
+let ctx;;
 let nb = 64;
 let colScaleMult = (6*nb)/256
 class Complex {
@@ -48,7 +49,6 @@ function getColorIndicesForCoord(x, y, width) {
   let red = y * (width * 4) + x * 4;
   return [red, red + 1, red + 2, red + 3];
 }
-
 function customQuadratic(x,h) {
     let a = -0.125490196078/lightFactor;
     return a*Math.pow(x-h,2)+255;
@@ -73,11 +73,6 @@ function downloadImg(imgData,name,i) {
     console.log('Downloaded frame '+i);
 }
 
-
-
-
-let canvas = createCanvas(wnx,wny)
-let ctx = canvas.getContext('2d');
 let imgData;
 function renderVideo(frames,name) {
     for (let a = 0; a < frames; a++) {
@@ -126,33 +121,48 @@ function renderVideo(frames,name) {
 
     }
 }
-
-
-
-//renderVideo(12,'video1');
-
+prompt.message = ''
+prompt.delimiter = ':'
 
 function start() {
     prompt.get({
 
         properties: {
-          $: {
-              description: '',
-              message: 'name:'
 
+            ClipName: {
+                description: '',
+                message: '',
+                required: true
+
+            },
+            FrameCount: {
+                description: '',
+                message: '',
+                required: true
+            },
+            ResolutionMultiplier: {
+                description: '',
+                message: '',
+                required: true
             }
         }
       }, function (err, result) {
 
-        let input = result.$.split(" ");;
-        let name = input[0];
-        let param = input[1];
-
+        //let input = result.$.split(" ");;
+        let name = result.ClipName;
+        let param = result.FrameCount;
+        resmult = result.ResolutionMultiplier;
+        wnx = 1920*resmult;
+        wny = 1080*resmult;
+        canvas = createCanvas(wnx,wny)
+        ctx = canvas.getContext('2d');
         renderVideo(param,name);
+
         prompt.stop();
 
 
     });
     prompt.start();
 }
+
 start();
