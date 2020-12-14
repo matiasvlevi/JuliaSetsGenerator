@@ -1,1 +1,2 @@
-node nodemin.js
+node nodemain.js
+pause

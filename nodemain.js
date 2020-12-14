@@ -1,12 +1,18 @@
-const { createCanvas } = require('canvas');
+const {createCanvas, Image} = require('canvas');
+require('mathjs');
+const prompt = require('prompt')
+const fs = require('fs');
+let lightFactor = 2;
+let resmult = 2;
+let wnx = 1920*resmult;
+let wny = 1080*resmult;
 
+let nb = 64;
+let colScaleMult = (6*nb)/256
 class Complex {
     constructor(r,i) {
         this.r = r;
         this.i = i;
-    }
-    log() {
-        //console.log(this.r+" + "+this.i+"i");
     }
     static square(c) {
 
@@ -14,13 +20,9 @@ class Complex {
         let i1 = c.r*c.i;
         let i2 = c.i*c.i;
         let i3 = c.i*c.r;
-        let nc = new Complex(round((real-i2)*10000)/10000,round((i1+i3)*10000)/10000);
+        let nc = new Complex(Math.round((real-i2)*10000)/10000,Math.round((i1+i3)*10000)/10000);
 
         return nc;
-    }
-    render() {
-        text("("+round(this.r*100)/100+"+"+round(this.i*100)/100+"i)",this.r*zoom,this.i*zoom)
-        ellipse(this.r*zoom,this.i*zoom,1,1);
     }
     add(c2) {
 
@@ -30,71 +32,127 @@ class Complex {
 
     }
 }
-let zoom = 1;
-let wnx = window.innerWidth;
-let wny = window.innerHeight;
-let points = [];
-let pixels = [];
-let nb = 256;
-let sx;
-let sy;
-let lightFactor = 2;
+function map(x,a,b,c,d) {
+    return (x-a)/(b-a) * (d-c) + c;
+}
+function constrain(x,a,b) {
+    if (x >= b) {
+        return b;
+    } else if (x <= a) {
+        return a;
+    } else {
+        return x;
+    }
+}
+function getColorIndicesForCoord(x, y, width) {
+  let red = y * (width * 4) + x * 4;
+  return [red, red + 1, red + 2, red + 3];
+}
+
 function customQuadratic(x,h) {
     let a = -0.125490196078/lightFactor;
-    return a*pow(x-h,2)+255;
+    return a*Math.pow(x-h,2)+255;
 
 
 }
 function scaleColor(value) {
-    let n1 = map(value,0,nb,0,255*6)
+    let n1 = map(value,0,nb,0,255*colScaleMult)
     let n = constrain(n1,0,255);
     let g = customQuadratic(n,127.5);
     let b = customQuadratic(n,127.5/2);
     let r = customQuadratic(n,3*(127.5/2));
-    return color(r,g,b);
+    return [r,g,b];
 }
-let img;
-//createCanvas(wnx,wny);
-for (let a = 0; a < 24; a++) {
-    for (let r = 0; r < wnx; r++) {
+function downloadImg(imgData,name,i) {
+    ctx.putImageData(imgData,0,0);
+    const buffer = canvas.toBuffer('image/png');
+    if (!fs.existsSync(name)) {
+        fs.mkdirSync('./'+name)
+    }
+    fs.writeFileSync('./'+name+'/frame_'+i+'.png', buffer);
+    console.log('Downloaded frame '+i);
+}
 
-        for (let i = 0; i < wny; i++) {
-            let c = new Complex((r-wnx/2)*0.0025,(i-(wny/2))*0.0025);
-            c.add(new Complex(-0.5,0))
-            let max = 0;
-            for (let j = 0; j < nb; j++) {
 
-                c.add(Complex.square(c));
-                c.add(new Complex(0.0416667*a,0.1))
 
-                if (c.i == Infinity || c.r == Infinity) {
-                    //console.log("to infinity");
-                    max = j;
-                    //console.log(r,i,max)
-                    j = nb;
+
+let canvas = createCanvas(wnx,wny)
+let ctx = canvas.getContext('2d');
+let imgData;
+function renderVideo(frames,name) {
+    for (let a = 0; a < frames; a++) {
+        imgData = ctx.createImageData(wnx,wny);
+
+        for (let r = 0; r < wnx; r++) {
+
+            for (let i = 0; i < wny; i++) {
+                let c = new Complex((r-wnx/2)*(0.0025/resmult),(i-(wny/2))*(0.0025/resmult));
+                c.add(new Complex(-0.5,0))
+                let max = 0;
+                for (let j = 0; j < nb; j++) {
+
+                    c.add(Complex.square(c));
+                    c.add(new Complex(Math.cos((Math.PI*2/frames)*a),Math.sin((Math.PI*2/frames)*a)))
+
+                    if (c.i == Infinity || c.r == Infinity || isNaN(c.r) || isNaN(c.i)) {
+                        //console.log("to infinity");
+                        max = j;
+                        //console.log(r,i,max)
+                        j = nb;
+
+                    }
 
                 }
 
+                //pixels[(wnx*i)+r] = scaleColor(max);
+                let colorIndices = getColorIndicesForCoord(r, i, wnx);
+
+                let redIndex = colorIndices[0];
+                let greenIndex = colorIndices[1];
+                let blueIndex = colorIndices[2];
+                let alpha = colorIndices[3];
+                let pcolor = scaleColor(max);
+
+                imgData.data[redIndex] = pcolor[0];
+                imgData.data[greenIndex] = pcolor[1];
+                imgData.data[blueIndex] = pcolor[2];
+                imgData.data[alpha] = 255;
+                //ctx.putImageData(imgData);
+
             }
 
-            pixels[(wnx*i)+r] = scaleColor(max);
-
-
         }
+        downloadImg(imgData,name,a);
 
     }
-    //pixels.splice(pixels.length-1,1)
-    img = createImage(wnx,wny);
-    img.loadPixels();
-    for (let x = 0; x < wnx; x++) {
-        for (let y = 0; y < wny; y++) {
-            c = pixels[(wnx*y)+x];
-
-            img.set(x,y, c);
-
-
-        }
-    }
-    img.updatePixels();
-    img.save('frame'+a+'_juliaset1','png');
 }
+
+
+
+//renderVideo(12,'video1');
+
+
+function start() {
+    prompt.get({
+
+        properties: {
+          $: {
+              description: '',
+              message: 'name:'
+
+            }
+        }
+      }, function (err, result) {
+
+        let input = result.$.split(" ");;
+        let name = input[0];
+        let param = input[1];
+
+        renderVideo(param,name);
+        prompt.stop();
+
+
+    });
+    prompt.start();
+}
+start();
