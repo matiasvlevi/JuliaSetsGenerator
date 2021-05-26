@@ -1,4 +1,7 @@
 # Julia Sets Generator
+# Requirements
+* nodejs
+
 
 # Usage
 * Launch the `run.bat` file. <br />
